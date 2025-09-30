@@ -12,20 +12,20 @@ INSERT INTO users (name, email, password_hash, role) VALUES
 ('Student Three', 'student3@example.com', 'Password123', 'student');
 
 -- Books
-INSERT INTO books (title, author, category, availability) VALUES
-('Clean Code', 'Robert C. Martin', 'Software Engineering', 1),
-('The Pragmatic Programmer', 'Andrew Hunt; David Thomas', 'Software Engineering', 1),
-('Introduction to Algorithms', 'Thomas H. Cormen', 'Computer Science', 1),
-('Design Patterns', 'Erich Gamma; Richard Helm; Ralph Johnson; John Vlissides', 'Computer Science', 1),
-('Artificial Intelligence: A Modern Approach', 'Stuart Russell; Peter Norvig', 'Artificial Intelligence', 1),
-('Deep Learning', 'Ian Goodfellow; Yoshua Bengio; Aaron Courville', 'Artificial Intelligence', 0),
-('Database System Concepts', 'Abraham Silberschatz', 'Databases', 1),
-('Operating System Concepts', 'Abraham Silberschatz', 'Operating Systems', 1),
-('Computer Networks', 'Andrew S. Tanenbaum', 'Networking', 1),
-('Modern Operating Systems', 'Andrew S. Tanenbaum', 'Operating Systems', 0),
-('Structure and Interpretation of Computer Programs', 'Harold Abelson; Gerald Jay Sussman', 'Computer Science', 1),
-('Clean Architecture', 'Robert C. Martin', 'Software Engineering', 1),
-('Refactoring', 'Martin Fowler', 'Software Engineering', 1);
+INSERT INTO books (title, author, category, cover_url, availability) VALUES
+('Clean Code', 'Robert C. Martin', 'Software Engineering', 'uploads/covers/clean_code.jpg', 1),
+('The Pragmatic Programmer', 'Andrew Hunt; David Thomas', 'Software Engineering', 'uploads/covers/pragmatic_programmer.jpg', 1),
+('Introduction to Algorithms', 'Thomas H. Cormen', 'Computer Science', 'uploads/covers/clrs.jpg', 1),
+('Design Patterns', 'Erich Gamma; Richard Helm; Ralph Johnson; John Vlissides', 'Computer Science', 'uploads/covers/design_patterns.jpg', 1),
+('Artificial Intelligence: A Modern Approach', 'Stuart Russell; Peter Norvig', 'Artificial Intelligence', 'uploads/covers/aima.jpg', 1),
+('Deep Learning', 'Ian Goodfellow; Yoshua Bengio; Aaron Courville', 'Artificial Intelligence', 'uploads/covers/deep_learning.jpg', 0),
+('Database System Concepts', 'Abraham Silberschatz', 'Databases', 'uploads/covers/db_concepts.jpg', 1),
+('Operating System Concepts', 'Abraham Silberschatz', 'Operating Systems', 'uploads/covers/os_concepts.jpg', 1),
+('Computer Networks', 'Andrew S. Tanenbaum', 'Networking', 'uploads/covers/computer_networks.jpg', 1),
+('Modern Operating Systems', 'Andrew S. Tanenbaum', 'Operating Systems', 'uploads/covers/modern_os.jpg', 0),
+('Structure and Interpretation of Computer Programs', 'Harold Abelson; Gerald Jay Sussman', 'Computer Science', 'uploads/covers/sicp.jpg', 1),
+('Clean Architecture', 'Robert C. Martin', 'Software Engineering', 'uploads/covers/clean_architecture.jpg', 1),
+('Refactoring', 'Martin Fowler', 'Software Engineering', 'uploads/covers/refactoring.jpg', 1);
 
 -- Borrow Records (mix of borrowed, returned, overdue)
 -- Assume user_ids 1..6 and book_ids 1..13 from the inserts above

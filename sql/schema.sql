@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS books (
 	title VARCHAR(200) NOT NULL,
 	author VARCHAR(150) NOT NULL,
 	category VARCHAR(100) NOT NULL,
+	cover_url VARCHAR(255) NULL,
 	availability TINYINT(1) NOT NULL DEFAULT 1,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	INDEX idx_books_search (title, author, category)
