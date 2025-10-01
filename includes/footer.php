@@ -13,6 +13,13 @@ require_once __DIR__ . '/functions.php';
 <!-- Site Footer -->
 <footer class="site-footer">
     <div class="container">
+        <!-- Footer Brand + Navigation links -->
+        <div class="footer-brand">
+            <a href="<?php echo h((strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false) ? '../index.php' : 'index.php'); ?>" aria-label="<?php echo h('Home'); ?>">
+                <img class="brand-logo footer-logo" src="<?php echo h((strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false) ? '../assets/Canberra LBBS.png' : 'assets/Canberra LBBS.png'); ?>" alt="<?php echo h('Library System'); ?>">
+            </a>
+        </div>
+        
         <!-- Footer navigation links -->
         <div class="footer-links">
             <a href="<?php echo h((strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false) ? '../about.php' : 'about.php'); ?>">
