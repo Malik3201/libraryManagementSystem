@@ -84,104 +84,144 @@ $success = get_flash('success');
 $qs = $_GET;
 unset($qs['page']);
 $baseQuery = http_build_query($qs);
+include __DIR__ . '/includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?php echo h('Catalog'); ?></title>
-<style>
-body { font-family: Arial, sans-serif; margin: 2rem; }
-.container { max-width: 960px; margin: 0 auto; }
-.flash { padding: .75rem; margin-bottom: 1rem; border-radius: 4px; }
-.flash.error { background: #ffe5e5; color: #8a1f1f; }
-.flash.success { background: #e6ffed; color: #0f6b2b; }
-form.search { display: grid; grid-template-columns: 1fr 200px 180px auto; gap: .5rem; margin-bottom: 1rem; }
-table { border-collapse: collapse; width: 100%; }
-th, td { border: 1px solid #ddd; padding: .5rem; text-align: left; }
-.pagination { margin-top: 1rem; }
-.pagination a, .pagination span { margin-right: .5rem; }
-button { padding: .4rem .6rem; }
-</style>
-</head>
-<body>
-<div class="container">
-	<h1><?php echo h('Catalog'); ?></h1>
-	<?php if ($error): ?><div class="flash error"><?php echo h($error); ?></div><?php endif; ?>
-	<?php if ($success): ?><div class="flash success"><?php echo h($success); ?></div><?php endif; ?>
 
-	<form class="search" method="get" action="">
-		<input type="text" name="q" placeholder="<?php echo h('Keyword'); ?>" value="<?php echo h($q); ?>">
-		<select name="category">
-			<option value=""><?php echo h('All categories'); ?></option>
-			<?php foreach ($categories as $cat): ?>
-				<option value="<?php echo h($cat); ?>" <?php echo $category===$cat?'selected':''; ?>><?php echo h($cat); ?></option>
-			<?php endforeach; ?>
-		</select>
-		<select name="avail">
-			<option value="all" <?php echo $avail==='all'?'selected':''; ?>><?php echo h('All'); ?></option>
-			<option value="available" <?php echo $avail==='available'?'selected':''; ?>><?php echo h('Available only'); ?></option>
-		</select>
-		<button type="submit"><?php echo h('Search'); ?></button>
-	</form>
+<main class="section">
+	<div class="container">
+		<div class="catalog-header">
+			<div>
+				<h1 class="catalog-title"><?php echo h('Book Catalog'); ?></h1>
+				<p class="catalog-subtitle"><?php echo h('Discover and borrow from our collection'); ?></p>
+			</div>
+		</div>
+		
+		<?php if ($error): ?><div class="alert alert-error"><?php echo h($error); ?></div><?php endif; ?>
+		<?php if ($success): ?><div class="alert alert-success"><?php echo h($success); ?></div><?php endif; ?>
 
-	<table>
-		<thead>
-			<tr>
-				<th><?php echo h('Title'); ?></th>
-				<th><?php echo h('Author'); ?></th>
-				<th><?php echo h('Category'); ?></th>
-				<th><?php echo h('Availability'); ?></th>
-				<th><?php echo h('Action'); ?></th>
-			</tr>
-		</thead>
-		<tbody>
+		<div class="search-filters">
+			<form method="get" action="">
+				<div class="form">
+					<div class="search-input">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="11" cy="11" r="8"></circle>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+						</svg>
+						<input type="text" name="q" value="<?php echo h($q); ?>" placeholder="Search by title, author, or category">
+					</div>
+					<div>
+						<label><?php echo h('Category'); ?></label>
+						<select name="category">
+							<option value=""><?php echo h('All Categories'); ?></option>
+							<?php foreach ($categories as $cat): ?>
+								<option value="<?php echo h($cat); ?>" <?php echo $category===$cat?'selected':''; ?>><?php echo h($cat); ?></option>
+							<?php endforeach; ?>
+						</select>
+					</div>
+					<div>
+						<label><?php echo h('Availability'); ?></label>
+						<select name="avail">
+							<option value="all" <?php echo $avail==='all'?'selected':''; ?>><?php echo h('All Books'); ?></option>
+							<option value="available" <?php echo $avail==='available'?'selected':''; ?>><?php echo h('Available Only'); ?></option>
+						</select>
+					</div>
+					<button class="btn btn-accent" type="submit">
+						<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="11" cy="11" r="8"></circle>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+						</svg>
+						<?php echo h('Search'); ?>
+					</button>
+				</div>
+			</form>
+		</div>
+
 		<?php if (empty($books)): ?>
-			<tr><td colspan="5"><?php echo h('No results found'); ?></td></tr>
+			<div class="empty-card">
+				<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px; color: var(--color-text-muted);">
+					<circle cx="11" cy="11" r="8"></circle>
+					<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+				</svg>
+				<h3><?php echo h('No books found'); ?></h3>
+				<p><?php echo h('Try adjusting your search criteria or browse all books.'); ?></p>
+			</div>
 		<?php else: ?>
-			<?php foreach ($books as $b): ?>
-			<tr>
-				<td>
-					<?php if (!empty($b['cover_url'])): ?>
-						<div><img src="<?php echo h($b['cover_url']); ?>" alt="<?php echo h($b['title']); ?>" style="width:80px;height:auto;"></div>
-					<?php else: ?>
-						<div><?php echo h('No image'); ?></div>
-					<?php endif; ?>
-					<div><?php echo h($b['title']); ?></div>
-				</td>
-				<td><?php echo h($b['author']); ?></td>
-				<td><?php echo h($b['category']); ?></td>
-				<td><?php echo $b['availability'] ? h('Available') : h('Borrowed'); ?></td>
-				<td>
-					<?php if ((int)$b['availability'] === 1): ?>
-						<form method="post" action="borrow.php" style="display:inline">
-						<?php echo csrf_field(); ?>
-							<input type="hidden" name="book_id" value="<?php echo h((string)$b['book_id']); ?>">
-							<button type="submit"><?php echo h('Borrow'); ?></button>
-						</form>
-					<?php else: ?>
-						<span><?php echo h('—'); ?></span>
-					<?php endif; ?>
-				</td>
-			</tr>
-			<?php endforeach; ?>
+			<div class="card-grid">
+				<?php foreach ($books as $b): ?>
+					<div class="book-card">
+						<div class="cover">
+							<?php if (!empty($b['cover_url'])): ?>
+								<img src="<?php echo h($b['cover_url']); ?>" alt="<?php echo h($b['title']); ?>">
+							<?php else: ?>
+								<img src="https://via.placeholder.com/150x200?text=No+Cover" alt="<?php echo h($b['title']); ?>">
+							<?php endif; ?>
+						</div>
+						<div class="book-card-content">
+							<h3><?php echo h($b['title']); ?></h3>
+							<p class="author"><?php echo h($b['author']); ?></p>
+							<span class="category"><?php echo h($b['category']); ?></span>
+							<div class="availability">
+								<?php if ((int)$b['availability'] === 1): ?>
+									<span class="badge success"><?php echo h('Available'); ?></span>
+								<?php else: ?>
+									<span class="badge warn"><?php echo h('Borrowed'); ?></span>
+								<?php endif; ?>
+							</div>
+							<?php if ((int)$b['availability'] === 1): ?>
+								<form method="post" action="borrow.php">
+									<?php echo csrf_field(); ?>
+									<input type="hidden" name="book_id" value="<?php echo h((string)$b['book_id']); ?>">
+									<button class="btn btn-accent" type="submit">
+										<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"></path>
+											<path d="M4 4v15"></path>
+											<path d="M8 4v15"></path>
+											<path d="M12 4v15"></path>
+										</svg>
+										<?php echo h('Borrow Book'); ?>
+									</button>
+								</form>
+							<?php else: ?>
+								<button class="btn btn-muted" disabled>
+									<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M9 12l2 2 4-4"></path>
+										<circle cx="12" cy="12" r="10"></circle>
+									</svg>
+									<?php echo h('Currently Borrowed'); ?>
+								</button>
+							<?php endif; ?>
+						</div>
+					</div>
+				<?php endforeach; ?>
+			</div>
 		<?php endif; ?>
-		</tbody>
-	</table>
 
-	<div class="pagination">
-		<?php if ($page > 1): ?>
-			<a href="?<?php echo h($baseQuery . ($baseQuery? '&':'') . 'page=' . ($page-1)); ?>"><?php echo h('Prev'); ?></a>
-		<?php else: ?><span><?php echo h('Prev'); ?></span><?php endif; ?>
-		<span><?php echo h("Page {$page} of {$totalPages}"); ?></span>
-		<?php if ($page < $totalPages): ?>
-			<a href="?<?php echo h($baseQuery . ($baseQuery? '&':'') . 'page=' . ($page+1)); ?>"><?php echo h('Next'); ?></a>
-		<?php else: ?><span><?php echo h('Next'); ?></span><?php endif; ?>
+		<?php if ($totalPages > 1): ?>
+			<div class="pagination">
+				<?php if ($page > 1): ?>
+					<a href="?<?php echo h($baseQuery . ($baseQuery? '&':'') . 'page=' . ($page-1)); ?>" class="btn btn-outline">
+						<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="15,18 9,12 15,6"></polyline>
+						</svg>
+						<?php echo h('Previous'); ?>
+					</a>
+				<?php endif; ?>
+				
+				<span class="pagination-info"><?php echo h("Page {$page} of {$totalPages}"); ?></span>
+				
+				<?php if ($page < $totalPages): ?>
+					<a href="?<?php echo h($baseQuery . ($baseQuery? '&':'') . 'page=' . ($page+1)); ?>" class="btn btn-outline">
+						<?php echo h('Next'); ?>
+						<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="9,18 15,12 9,6"></polyline>
+						</svg>
+					</a>
+				<?php endif; ?>
+			</div>
+		<?php endif; ?>
 	</div>
+</main>
 
-</div>
-</body>
-</html>
+<?php include __DIR__ . '/includes/footer.php'; ?>
 
 

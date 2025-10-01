@@ -16,34 +16,69 @@ if (!$user) { redirect('login.php'); }
 
 $success = get_flash('success');
 $error = get_flash('error');
+include __DIR__ . '/includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?php echo h('Faculty Dashboard'); ?></title>
-<style>
-body { font-family: Arial, sans-serif; margin: 2rem; }
-.container { max-width: 800px; margin: 0 auto; }
-.flash { padding: .75rem; margin-bottom: 1rem; border-radius: 4px; }
-.flash.error { background: #ffe5e5; color: #8a1f1f; }
-.flash.success { background: #e6ffed; color: #0f6b2b; }
-a { display: inline-block; margin-right: 1rem; }
-</style>
-</head>
-<body>
-<div class="container">
-	<h1><?php echo h('Hello, ' . ($user['name'] ?? 'Faculty')); ?></h1>
-	<?php if ($error): ?><div class="flash error"><?php echo h($error); ?></div><?php endif; ?>
-	<?php if ($success): ?><div class="flash success"><?php echo h($success); ?></div><?php endif; ?>
-	<div>
-		<a href="catalog.php"><?php echo h('View Catalog'); ?></a>
-		<a href="history.php"><?php echo h('My Borrow History'); ?></a>
-		<a href="logout.php"><?php echo h('Logout'); ?></a>
+
+<div class="dashboard-layout">
+	<?php include __DIR__ . '/includes/sidebar.php'; ?>
+	
+	<main class="dashboard-main">
+	<div class="dashboard-hero">
+		<div class="container">
+			<h1><?php echo h('Welcome back, ' . ($user['name'] ?? 'Faculty')); ?></h1>
+			<p><?php echo h('Access resources for your courses and research projects.'); ?></p>
+		</div>
 	</div>
+	
+	<div class="container">
+		<?php if ($error): ?><div class="alert alert-error"><?php echo h($error); ?></div><?php endif; ?>
+		<?php if ($success): ?><div class="alert alert-success"><?php echo h($success); ?></div><?php endif; ?>
+
+		<div class="dashboard-actions">
+			<div class="dashboard-card">
+				<div class="dashboard-card-icon">
+					<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<circle cx="11" cy="11" r="8"></circle>
+						<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+					</svg>
+				</div>
+				<h3><?php echo h('Browse Catalog'); ?></h3>
+				<p><?php echo h('Explore our academic collection to find materials for your courses and research.'); ?></p>
+				<a class="btn btn-accent" href="catalog.php">
+					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"></path>
+						<path d="M4 4v15"></path>
+						<path d="M8 4v15"></path>
+						<path d="M12 4v15"></path>
+					</svg>
+					<?php echo h('Explore Books'); ?>
+				</a>
+			</div>
+			
+			<div class="dashboard-card">
+				<div class="dashboard-card-icon">
+					<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M3 3h18v4H3z"></path>
+						<path d="M8 7v14"></path>
+						<path d="M16 7v14"></path>
+					</svg>
+				</div>
+				<h3><?php echo h('My History'); ?></h3>
+				<p><?php echo h('Manage your borrowed materials and track your research resources.'); ?></p>
+				<a class="btn btn-outline" href="history.php">
+					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M3 3h18v4H3z"></path>
+						<path d="M8 7v14"></path>
+						<path d="M16 7v14"></path>
+					</svg>
+					<?php echo h('View History'); ?>
+				</a>
+			</div>
+		</div>
+		</div>
+	</main>
 </div>
-</body>
-</html>
+
+<?php include __DIR__ . '/includes/footer.php'; ?>
 
 

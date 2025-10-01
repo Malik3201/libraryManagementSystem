@@ -41,71 +41,95 @@ $rows = $isAdmin ? $stmt->fetchAll() : $stmt->fetchAll();
 
 $error = get_flash('error');
 $success = get_flash('success');
+include __DIR__ . '/includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?php echo h('Borrowing History'); ?></title>
-<style>
-body { font-family: Arial, sans-serif; margin: 2rem; }
-.container { max-width: 960px; margin: 0 auto; }
-.flash { padding: .75rem; margin-bottom: 1rem; border-radius: 4px; }
-.flash.error { background: #ffe5e5; color: #8a1f1f; }
-.flash.success { background: #e6ffed; color: #0f6b2b; }
-table { border-collapse: collapse; width: 100%; }
-th, td { border: 1px solid #ddd; padding: .5rem; text-align: left; }
-button { padding: .35rem .6rem; }
-a { display: inline-block; margin-bottom: 1rem; }
-</style>
-</head>
-<body>
-<div class="container">
-	<h1><?php echo h('Borrowing History'); ?></h1>
-	<a href="catalog.php"><?php echo h('Back to Catalog'); ?></a>
-	<?php if ($error): ?><div class="flash error"><?php echo h($error); ?></div><?php endif; ?>
-	<?php if ($success): ?><div class="flash success"><?php echo h($success); ?></div><?php endif; ?>
 
-	<table>
-		<thead>
-			<tr>
-				<th><?php echo h('Title'); ?></th>
-				<th><?php echo h('Borrow date'); ?></th>
-				<th><?php echo h('Return date'); ?></th>
-				<th><?php echo h('Status'); ?></th>
-				<th><?php echo h('Action'); ?></th>
-			</tr>
-		</thead>
-		<tbody>
+<main class="section">
+	<div class="container">
+		<div class="history-header">
+			<div>
+				<h1 class="history-title"><?php echo h($isAdmin ? 'Borrowing History' : 'My Borrow History'); ?></h1>
+				<p class="history-subtitle"><?php echo h($isAdmin ? 'All borrowing records in the system' : 'Track your book borrowing activity'); ?></p>
+			</div>
+			<div class="history-actions">
+				<a class="btn btn-outline" href="catalog.php">
+					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"></path>
+						<path d="M4 4v15"></path>
+						<path d="M8 4v15"></path>
+						<path d="M12 4v15"></path>
+					</svg>
+					<?php echo h('Browse Books'); ?>
+				</a>
+			</div>
+		</div>
+		
+		<?php if ($error): ?><div class="alert alert-error"><?php echo h($error); ?></div><?php endif; ?>
+		<?php if ($success): ?><div class="alert alert-success"><?php echo h($success); ?></div><?php endif; ?>
+
 		<?php if (empty($rows)): ?>
-			<tr><td colspan="5"><?php echo h('No records found'); ?></td></tr>
+			<div class="empty-card">
+				<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px; color: var(--color-text-muted);">
+					<path d="M3 3h18v4H3z"></path>
+					<path d="M8 7v14"></path>
+					<path d="M16 7v14"></path>
+				</svg>
+				<h3><?php echo h('No borrowing records'); ?></h3>
+				<p><?php echo h($isAdmin ? 'No books have been borrowed yet.' : 'You haven\'t borrowed any books yet. Start exploring the catalog!'); ?></p>
+			</div>
 		<?php else: ?>
-			<?php foreach ($rows as $r): ?>
-			<tr>
-				<td><?php echo h($r['title']); ?></td>
-				<td><?php echo h($r['borrow_date']); ?></td>
-				<td><?php echo h($r['return_date'] ?? '—'); ?></td>
-				<td><?php echo h($r['status']); ?></td>
-				<td>
-					<?php if ($r['status'] === 'borrowed'): ?>
-						<form method="post" action="return.php" style="display:inline">
-							<?php echo csrf_field(); ?>
-							<input type="hidden" name="record_id" value="<?php echo h((string)$r['record_id']); ?>">
-							<button type="submit"><?php echo h('Return'); ?></button>
-						</form>
-					<?php else: ?>
-						<span><?php echo h('—'); ?></span>
-					<?php endif; ?>
-				</td>
-			</tr>
-			<?php endforeach; ?>
+			<table class="table striped hover">
+				<thead>
+					<tr>
+						<th><?php echo h('Book Title'); ?></th>
+						<th><?php echo h('Borrow Date'); ?></th>
+						<th><?php echo h('Return Date'); ?></th>
+						<th><?php echo h('Status'); ?></th>
+						<th><?php echo h('Action'); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+				<?php foreach ($rows as $r): ?>
+					<tr>
+						<td>
+							<div style="font-weight: 600;"><?php echo h($r['title']); ?></div>
+						</td>
+						<td><?php echo h(date('M j, Y', strtotime($r['borrow_date']))); ?></td>
+						<td><?php echo h($r['return_date'] ? date('M j, Y', strtotime($r['return_date'])) : '—'); ?></td>
+						<td>
+							<?php if ($r['status'] === 'borrowed'): ?>
+								<span class="badge accent"><?php echo h('Currently Borrowed'); ?></span>
+							<?php elseif ($r['status'] === 'returned'): ?>
+								<span class="badge success"><?php echo h('Returned'); ?></span>
+							<?php else: ?>
+								<span class="badge warn"><?php echo h('Overdue'); ?></span>
+							<?php endif; ?>
+						</td>
+						<td>
+							<?php if ($r['status'] === 'borrowed'): ?>
+								<form method="post" action="return.php" style="display:inline">
+									<?php echo csrf_field(); ?>
+									<input type="hidden" name="record_id" value="<?php echo h((string)$r['record_id']); ?>">
+									<button class="btn btn-accent" type="submit">
+										<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<path d="M9 12l2 2 4-4"></path>
+											<circle cx="12" cy="12" r="10"></circle>
+										</svg>
+										<?php echo h('Return Book'); ?>
+									</button>
+								</form>
+							<?php else: ?>
+								<span style="color: var(--color-text-muted);">—</span>
+							<?php endif; ?>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+				</tbody>
+			</table>
 		<?php endif; ?>
-		</tbody>
-	</table>
+	</div>
+</main>
 
-</div>
-</body>
-</html>
+<?php include __DIR__ . '/includes/footer.php'; ?>
 
 
