@@ -93,26 +93,25 @@ include __DIR__ . '/../includes/header.php';
 		<div class="admin-form-section">
 			<h2><?php echo h('Filter Logs'); ?></h2>
 			<form method="get" class="admin-form">
-				<div class="form-row">
-					<div>
+				<div class="filters-row">
+					<div class="filter-item">
 						<label><?php echo h('Status Filter'); ?></label>
-						<select name="status">
+						<select name="status" class="filter-select">
 							<option value="all" <?php echo $status==='all'?'selected':''; ?>><?php echo h('All Records'); ?></option>
-							<option value="borrowed" <?php echo $status==='borrowed'?'selected':''; ?>><?php echo h('Currently Borrowed'); ?></option>
+							<option value="borrowed" <?php echo $status==='borrowed'?'selected':''; ?>><?php echo h('Borrowed'); ?></option>
 							<option value="returned" <?php echo $status==='returned'?'selected':''; ?>><?php echo h('Returned'); ?></option>
 							<option value="overdue" <?php echo $status==='overdue'?'selected':''; ?>><?php echo h('Overdue'); ?></option>
 						</select>
 					</div>
-				</div>
-				<div>
-					<button class="btn btn-accent" type="submit">
+					<div class="filter-actions">
+						<button class="btn btn-edit-table" type="submit">
 						<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<circle cx="11" cy="11" r="8"></circle>
 							<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
 						</svg>
 						<?php echo h('Apply Filter'); ?>
 					</button>
-				</div>
+					</div>
 			</form>
 		</div>
 
@@ -129,6 +128,7 @@ include __DIR__ . '/../includes/header.php';
 					<p><?php echo h('No books have been borrowed yet, or no records match your filter.'); ?></p>
 				</div>
 			<?php else: ?>
+				<div class="table-responsive">
 				<table class="admin-table striped hover">
 					<thead>
 						<tr>
@@ -154,7 +154,7 @@ include __DIR__ . '/../includes/header.php';
 							<td><?php echo h($r['return_date'] ? date('M j, Y', strtotime($r['return_date'])) : '—'); ?></td>
 							<td>
 								<?php if ($r['status'] === 'borrowed'): ?>
-									<span class="badge accent"><?php echo h('Currently Borrowed'); ?></span>
+									<span class="badge accent"><?php echo h('Borrowed'); ?></span>
 								<?php elseif ($r['status'] === 'returned'): ?>
 									<span class="badge success"><?php echo h('Returned'); ?></span>
 								<?php else: ?>
@@ -165,6 +165,7 @@ include __DIR__ . '/../includes/header.php';
 					<?php endforeach; ?>
 					</tbody>
 				</table>
+				</div>
 			<?php endif; ?>
 		</div>
 

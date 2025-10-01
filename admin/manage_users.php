@@ -83,6 +83,7 @@ include __DIR__ . '/../includes/header.php';
 				<p><?php echo h('No users have been registered yet.'); ?></p>
 			</div>
 		<?php else: ?>
+			<div class="table-responsive">
 			<table class="admin-table striped hover">
 				<thead>
 					<tr>
@@ -113,15 +114,15 @@ include __DIR__ . '/../includes/header.php';
 						</td>
 						<td><?php echo h(date('M j, Y', strtotime($u['created_at']))); ?></td>
 						<td>
-							<form method="post" action="" style="display: inline-flex; align-items: center; gap: 8px;">
+							<form method="post" action="" class="actions-form">
 								<?php echo csrf_field(); ?>
 								<input type="hidden" name="user_id" value="<?php echo h((string)$u['user_id']); ?>">
-								<select name="role" style="padding: 6px 8px; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 0.9rem;">
+								<select name="role" class="role-select" style="padding: 6px 8px; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 0.9rem;">
 									<option value="student" <?php echo $u['role']==='student'?'selected':''; ?>><?php echo h('Student'); ?></option>
 									<option value="faculty" <?php echo $u['role']==='faculty'?'selected':''; ?>><?php echo h('Faculty'); ?></option>
 									<option value="admin" <?php echo $u['role']==='admin'?'selected':''; ?>><?php echo h('Admin'); ?></option>
 								</select>
-								<button class="btn btn-accent" type="submit" style="padding: 6px 12px; font-size: 0.85rem;">
+							<button class="btn btn-edit-table" type="submit">
 									<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 										<path d="M20 6L9 17l-5-5"></path>
 									</svg>
@@ -133,6 +134,7 @@ include __DIR__ . '/../includes/header.php';
 				<?php endforeach; ?>
 				</tbody>
 			</table>
+			</div>
 		<?php endif; ?>
 		</div>
 	</main>

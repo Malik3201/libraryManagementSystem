@@ -13,10 +13,6 @@ require_once __DIR__ . '/includes/csrf.php';
 
 start_secure_session();
 $user = current_user();
-if (!$user) {
-	flash('error', 'Please login to access the catalog.');
-	redirect('login.php');
-}
 
 csrf_token();
 
@@ -167,11 +163,11 @@ include __DIR__ . '/includes/header.php';
 									<span class="badge warn"><?php echo h('Borrowed'); ?></span>
 								<?php endif; ?>
 							</div>
-							<?php if ((int)$b['availability'] === 1): ?>
-								<form method="post" action="borrow.php">
-									<?php echo csrf_field(); ?>
-									<input type="hidden" name="book_id" value="<?php echo h((string)$b['book_id']); ?>">
-									<button class="btn btn-accent" type="submit">
+                            <?php if ((int)$b['availability'] === 1): ?>
+                                <form method="post" action="<?php echo h($user ? 'borrow.php' : 'login.php'); ?>">
+                                    <?php if ($user): ?><?php echo csrf_field(); ?><?php endif; ?>
+                                    <input type="hidden" name="book_id" value="<?php echo h((string)$b['book_id']); ?>">
+                                    <button class="btn btn-accent" type="submit">
 										<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 											<path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"></path>
 											<path d="M4 4v15"></path>

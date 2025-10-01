@@ -1242,6 +1242,24 @@ body.page-register .auth-card.animate-left {
 	padding: 24px; 
 	margin-bottom: 32px; 
 }
+
+/* Borrow Logs filters */
+.filters-row { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.filter-item { min-width: 220px; }
+.filter-select { padding: 8px 10px; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 0.95rem; }
+.filter-actions { }
+
+@media (max-width: 860px) {
+	.filters-row { display: grid; grid-template-columns: 1fr; gap: 10px; }
+	.filter-actions .btn { width: 100%; }
+}
+.admin-form .form-actions { margin-top: 10px; }
+.admin-form .form-actions .btn { padding: 12px 16px; }
+.add-book-btn { background: #E67E22; color: #fff; border: 1px solid #E67E22; border-radius: 10px; }
+.add-book-btn:hover { background: #d35400; border-color: #d35400; }
+@media (max-width: 860px) {
+	.add-book-btn { width: 100%; display: block; }
+}
 .admin-form-section h2 { 
 	font-size: 1.5rem; 
 	font-weight: 700; 
@@ -1269,6 +1287,13 @@ body.page-register .auth-card.animate-left {
 	border-radius: var(--radius); 
 	box-shadow: var(--shadow-sm); 
 	overflow: hidden; 
+}
+.table-responsive { width: 100%; overflow-x: auto; }
+.actions-form { display: inline-flex; align-items: center; gap: 8px; }
+@media (max-width: 860px) {
+	.actions-form { display: grid; grid-template-columns: 1fr; gap: 8px; width: 100%; }
+	.actions-form .role-select { width: 100%; }
+	.actions-form .btn { width: 100%; justify-content: center; }
 }
 .admin-table th { 
 	background: #f8fafc; 
@@ -1300,10 +1325,11 @@ body.page-register .auth-card.animate-left {
 	gap: 8px; 
 	align-items: center; 
 }
-.admin-table .btn { 
-	padding: 6px 12px; 
-	font-size: 0.85rem; 
-}
+.admin-table .btn { padding: 10px 14px; font-size: 0.9rem; border-radius: 10px; line-height: 1; }
+.btn.btn-edit { background: #4b5563; color: #fff; border: 1px solid #4b5563; }
+.btn.btn-edit:hover { background: #374151; border-color: #374151; }
+.btn.btn-edit-table { background: #E67E22; color: #fff; border: 1px solid #E67E22; }
+.btn.btn-edit-table:hover { background: #d35400; border-color: #d35400; }
 
 /* Illustration placeholder */
 .illus { border-radius: var(--radius); height: 320px; display: grid; place-items: center; overflow: hidden; box-shadow: var(--shadow-md); background: #0f172a; }
@@ -1449,6 +1475,9 @@ table.table.hover tr:hover td { background: #fafafa; }
 	padding: 0; 
 	overflow: hidden; 
 	transition: transform 0.2s ease, box-shadow 0.2s ease; 
+	display: flex;
+	flex-direction: column;
+	height: 100%;
 }
 .book-card:hover { 
 	transform: translateY(-2px); 
@@ -1503,6 +1532,11 @@ table.table.hover tr:hover td { background: #fafafa; }
 }
 .book-card .availability { 
 	margin-bottom: 12px; 
+}
+.book-card-content > form:last-child,
+.book-card-content > button:last-child,
+.book-card-content > a:last-child {
+	margin-top: auto;
 }
 .book-card .btn { 
 	width: 100%; 

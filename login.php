@@ -32,9 +32,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$valid = false;
 	}
 
-	if ($valid && login($email, $password)) {
-		flash('success', 'Welcome back');
-		redirect('index.php');
+    if ($valid && login($email, $password)) {
+        flash('success', 'Welcome back');
+        $u = current_user();
+        if ($u) {
+            $role = (string)($u['role'] ?? 'student');
+            if ($role === 'admin') { redirect('admin/dashboard.php'); }
+            if ($role === 'faculty') { redirect('faculty_dashboard.php'); }
+            redirect('student_dashboard.php');
+        }
+        redirect('index.php');
 	} else {
 		flash('error', 'Invalid credentials');
 		redirect('login.php');
