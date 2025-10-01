@@ -83,8 +83,8 @@ include __DIR__ . '/../includes/header.php';
 				<p><?php echo h('No users have been registered yet.'); ?></p>
 			</div>
 		<?php else: ?>
-			<div class="table-responsive">
-			<table class="admin-table striped hover">
+            <div class="table-responsive">
+            <table class="admin-table striped hover" style="width:100%">
 				<thead>
 					<tr>
 						<th><?php echo h('Name'); ?></th>

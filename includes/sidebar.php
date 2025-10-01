@@ -1,54 +1,67 @@
 <?php
-/*
- * Purpose: Dashboard sidebar navigation
+/**
+ * sidebar.php
+ * Dashboard sidebar navigation with role-based menu items.
+ * Displays user info and provides navigation for authenticated users.
  */
 
 declare(strict_types=1);
 
+// Get current user and page information for navigation
 $user = current_user();
 $current_page = basename($_SERVER['SCRIPT_NAME'], '.php');
 $in_admin = (strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false);
+
+// Determine user role for conditional navigation
 $is_admin = ($user['role'] ?? '') === 'admin';
 $is_faculty = ($user['role'] ?? '') === 'faculty';
 $is_student = ($user['role'] ?? '') === 'student';
 ?>
 
+<!-- Mobile sidebar toggle button -->
 <button class="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
 
+<!-- Dashboard Sidebar -->
 <aside class="dashboard-sidebar">
-	<div class="sidebar-header">
-		<div class="user-info">
-			<div class="avatar">
-				<?php if (isset($user['avatar']) && $user['avatar']): ?>
-					<img src="<?php echo h($user['avatar']); ?>" alt="User avatar">
-				<?php else: ?>
-					<div class="avatar-placeholder">
-						<?php echo strtoupper(substr($user['name'] ?? 'U', 0, 1)); ?>
-					</div>
-				<?php endif; ?>
-			</div>
-			<div class="user-details">
-				<h3><?php echo h($user['name'] ?? 'User'); ?></h3>
-				<span class="user-role"><?php echo h(ucfirst($user['role'] ?? 'user')); ?></span>
-			</div>
-		</div>
-	</div>
-	
-	<nav class="sidebar-nav">
-		<ul class="nav-menu">
-			<!-- Dashboard Home -->
+    <!-- User Information Header -->
+    <div class="sidebar-header">
+        <div class="user-info">
+            <!-- User Avatar -->
+            <div class="avatar">
+                <?php if (isset($user['avatar']) && $user['avatar']): ?>
+                    <img src="<?php echo h($user['avatar']); ?>" alt="User avatar">
+                <?php else: ?>
+                    <!-- Default avatar with user's first initial -->
+                    <div class="avatar-placeholder">
+                        <?php echo strtoupper(substr($user['name'] ?? 'U', 0, 1)); ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+            
+            <!-- User Details -->
+            <div class="user-details">
+                <h3><?php echo h($user['name'] ?? 'User'); ?></h3>
+                <span class="user-role"><?php echo h(ucfirst($user['role'] ?? 'user')); ?></span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar Navigation Menu -->
+    <nav class="sidebar-nav">
+        <ul class="nav-menu">
+            <!-- Dashboard Home - Available to all users -->
             <li class="nav-item">
                 <a href="<?php echo h($is_admin ? ($in_admin ? 'dashboard.php' : 'admin/dashboard.php') : ($is_faculty ? 'faculty_dashboard.php' : 'student_dashboard.php')); ?>" 
-				   class="nav-link <?php echo ($current_page === 'dashboard' || $current_page === 'student_dashboard' || $current_page === 'faculty_dashboard') ? 'active' : ''; ?>">
-					<span class="nav-icon">
-						<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-							<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-							<polyline points="9,22 9,12 15,12 15,22"></polyline>
-						</svg>
-					</span>
-					<span class="nav-text">Dashboard</span>
-				</a>
-			</li>
+                   class="nav-link <?php echo ($current_page === 'dashboard' || $current_page === 'student_dashboard' || $current_page === 'faculty_dashboard') ? 'active' : ''; ?>">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+            </li>
 			
 			<!-- Catalog -->
             <?php if (!$is_admin): ?>
@@ -65,10 +78,10 @@ $is_student = ($user['role'] ?? '') === 'student';
             </li>
             <?php endif; ?>
 			
-			<?php if (!$is_admin): ?>
-			<!-- Borrow/Return - Only for students and faculty -->
-			<li class="nav-item">
-				<a href="return.php" class="nav-link <?php echo $current_page === 'return' ? 'active' : ''; ?>">
+            <?php if (!$is_admin): ?>
+            <!-- Return page lists active borrowings to return -->
+            <li class="nav-item">
+                <a href="<?php echo h($in_admin ? '../return.php' : 'return.php'); ?>" class="nav-link <?php echo ($current_page === 'return') ? 'active' : ''; ?>">
 					<span class="nav-icon">
 						<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H5a2 2 0 0 0-2-2z"></path>
@@ -76,13 +89,13 @@ $is_student = ($user['role'] ?? '') === 'student';
 							<path d="M12 3v18"></path>
 						</svg>
 					</span>
-					<span class="nav-text">Return Book</span>
+                    <span class="nav-text">Return Book</span>
 				</a>
 			</li>
 			
 			<!-- History -->
-			<li class="nav-item">
-				<a href="history.php" class="nav-link <?php echo $current_page === 'history' ? 'active' : ''; ?>">
+            <li class="nav-item">
+                <a href="<?php echo h($in_admin ? '../history.php' : 'history.php'); ?>" class="nav-link <?php echo $current_page === 'history' ? 'active' : ''; ?>">
 					<span class="nav-icon">
 						<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M3 3v18h18"></path>
@@ -144,8 +157,8 @@ $is_student = ($user['role'] ?? '') === 'student';
 				<span class="section-title">Account</span>
 			</li>
 			
-			<li class="nav-item">
-				<a href="<?php echo h($is_admin ? '../profile.php' : 'profile.php'); ?>" class="nav-link <?php echo $current_page === 'profile' ? 'active' : ''; ?>">
+            <li class="nav-item">
+                <a href="<?php echo h($in_admin ? '../profile.php' : 'profile.php'); ?>" class="nav-link <?php echo $current_page === 'profile' ? 'active' : ''; ?>">
 					<span class="nav-icon">
 						<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -156,8 +169,8 @@ $is_student = ($user['role'] ?? '') === 'student';
 				</a>
 			</li>
 			
-			<li class="nav-item">
-				<a href="<?php echo h($is_admin ? '../logout.php' : 'logout.php'); ?>" class="nav-link logout">
+            <li class="nav-item">
+                <a href="<?php echo h($in_admin ? '../logout.php' : 'logout.php'); ?>" class="nav-link logout">
 					<span class="nav-icon">
 						<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>

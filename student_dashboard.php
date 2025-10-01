@@ -16,6 +16,36 @@ if (!$user) { redirect('login.php'); }
 
 $success = get_flash('success');
 $error = get_flash('error');
+// Load dynamic data
+$pdo = db();
+// Counts
+$stmtTmp = $pdo->prepare('SELECT COUNT(*) FROM borrow_records WHERE user_id = ? AND status = "borrowed"');
+$stmtTmp->execute([(int)$user['user_id']]);
+$borrowedCount = (int)$stmtTmp->fetchColumn();
+
+$stmtTmp = $pdo->prepare('SELECT COUNT(*) FROM borrow_records WHERE user_id = ? AND status = "returned"');
+$stmtTmp->execute([(int)$user['user_id']]);
+$returnedCount = (int)$stmtTmp->fetchColumn();
+
+$stmtTmp = $pdo->prepare('SELECT COUNT(*) FROM borrow_records WHERE user_id = ?');
+$stmtTmp->execute([(int)$user['user_id']]);
+$totalHistoryCount = (int)$stmtTmp->fetchColumn();
+
+// Currently reading: latest borrowed (not yet returned)
+$stmtTmp = $pdo->prepare('SELECT br.record_id, br.borrow_date, br.due_date, b.title, b.author, b.cover_url
+    FROM borrow_records br JOIN books b ON b.book_id = br.book_id
+    WHERE br.user_id = ? AND br.status = "borrowed"
+    ORDER BY br.borrow_date DESC, br.record_id DESC LIMIT 1');
+$stmtTmp->execute([(int)$user['user_id']]);
+$currentReading = $stmtTmp->fetch();
+
+// Recently borrowed (active) - last 5
+$stmtTmp = $pdo->prepare('SELECT br.record_id, br.borrow_date, br.due_date, b.title, b.cover_url
+    FROM borrow_records br JOIN books b ON b.book_id = br.book_id
+    WHERE br.user_id = ? AND br.status = "borrowed"
+    ORDER BY br.borrow_date DESC, br.record_id DESC LIMIT 3');
+$stmtTmp->execute([(int)$user['user_id']]);
+$recentBorrowed = $stmtTmp->fetchAll();
 include __DIR__ . '/includes/header.php';
 ?>
 
@@ -44,7 +74,7 @@ include __DIR__ . '/includes/header.php';
 					</svg>
 				</div>
 				<div class="stat-content">
-					<div class="stat-number">3</div>
+                    <div class="stat-number"><?php echo h((string)$borrowedCount); ?></div>
 					<div class="stat-label">Books Borrowed</div>
 				</div>
 			</div>
@@ -56,7 +86,7 @@ include __DIR__ . '/includes/header.php';
 					</svg>
 				</div>
 				<div class="stat-content">
-					<div class="stat-number">12</div>
+                    <div class="stat-number"><?php echo h((string)$returnedCount); ?></div>
 					<div class="stat-label">Books Returned</div>
 				</div>
 			</div>
@@ -68,7 +98,7 @@ include __DIR__ . '/includes/header.php';
 					</svg>
 				</div>
 				<div class="stat-content">
-					<div class="stat-number">15</div>
+                    <div class="stat-number"><?php echo h((string)$totalHistoryCount); ?></div>
 					<div class="stat-label">Total History</div>
 				</div>
 			</div>
@@ -117,45 +147,49 @@ include __DIR__ . '/includes/header.php';
 			<div class="dashboard-section">
 				<h2 class="section-title"><?php echo h('Reading Progress'); ?></h2>
 				<div class="progress-grid">
-					<div class="progress-card">
-						<h3><?php echo h('Currently Reading'); ?></h3>
-						<div class="book-item">
-							<div class="book-cover">
-								<div class="book-placeholder">📚</div>
-							</div>
-							<div class="book-info">
-								<h4>Introduction to Algorithms</h4>
-								<p>by Thomas H. Cormen</p>
-								<div class="progress-bar">
-									<div class="progress-fill" style="width: 65%"></div>
-								</div>
-								<span class="progress-text">65% Complete</span>
-							</div>
-						</div>
-					</div>
-					<div class="progress-card">
-						<h3><?php echo h('Recently Borrowed'); ?></h3>
-						<div class="recent-books">
-							<div class="recent-book">
-								<div class="book-cover small">
-									<div class="book-placeholder">📖</div>
-								</div>
-								<div class="book-details">
-									<h5>Data Structures</h5>
-									<p>Due: 2024-01-15</p>
-								</div>
-							</div>
-							<div class="recent-book">
-								<div class="book-cover small">
-									<div class="book-placeholder">🔬</div>
-								</div>
-								<div class="book-details">
-									<h5>Machine Learning</h5>
-									<p>Due: 2024-01-20</p>
-								</div>
-							</div>
-						</div>
-					</div>
+                    <div class="progress-card">
+                        <h3><?php echo h('Currently Reading'); ?></h3>
+                        <?php if ($currentReading): ?>
+                        <div class="book-item">
+                            <div class="book-cover">
+                                <?php if (!empty($currentReading['cover_url'])): ?>
+                                    <img src="<?php echo h($currentReading['cover_url']); ?>" alt="<?php echo h($currentReading['title']); ?>" style="width:60px;height:80px;object-fit:cover;border-radius:8px;">
+                                <?php else: ?>
+                                    <div class="book-placeholder">📚</div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="book-info">
+                                <h4><?php echo h($currentReading['title']); ?></h4>
+                                <?php if (!empty($currentReading['author'])): ?><p><?php echo h('by ' . $currentReading['author']); ?></p><?php endif; ?>
+                                <span class="progress-text"><?php echo h('Borrowed: ' . date('M j, Y', strtotime($currentReading['borrow_date'])) . ($currentReading['due_date'] ? ' • Due: ' . date('M j, Y', strtotime($currentReading['due_date'])) : '')); ?></span>
+                            </div>
+                        </div>
+                        <?php else: ?>
+                            <p class="muted"><?php echo h('No active reading right now.'); ?></p>
+                        <?php endif; ?>
+                    </div>
+                    <div class="progress-card">
+                        <h3><?php echo h('Recently Borrowed'); ?></h3>
+                        <div class="recent-books">
+                            <?php if (empty($recentBorrowed)): ?>
+                                <p class="muted"><?php echo h('No recent borrowings.'); ?></p>
+                            <?php else: foreach ($recentBorrowed as $rb): ?>
+                            <div class="recent-book">
+                                <div class="book-cover small">
+                                    <?php if (!empty($rb['cover_url'])): ?>
+                                        <img src="<?php echo h($rb['cover_url']); ?>" alt="<?php echo h($rb['title']); ?>" style="width:40px;height:50px;object-fit:cover;border-radius:6px;">
+                                    <?php else: ?>
+                                        <div class="book-placeholder">📖</div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="book-details">
+                                    <h5><?php echo h($rb['title']); ?></h5>
+                                    <p><?php echo h('Borrowed: ' . date('M j, Y', strtotime($rb['borrow_date'])) . ($rb['due_date'] ? ' • Due: ' . date('M j, Y', strtotime($rb['due_date'])) : '')); ?></p>
+                                </div>
+                            </div>
+                            <?php endforeach; endif; ?>
+                        </div>
+                    </div>
 				</div>
 			</div>
 			
@@ -184,7 +218,5 @@ include __DIR__ . '/includes/header.php';
 	</div>
 </main>
 </div>
-
-<?php include __DIR__ . '/includes/footer.php'; ?>
 
 

@@ -35,28 +35,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	}
 
 	$action = $_POST['action'] ?? '';
-	if ($action === 'add') {
+    if ($action === 'add') {
 		$title = trim((string)($_POST['title'] ?? ''));
 		$author = trim((string)($_POST['author'] ?? ''));
 		$category = trim((string)($_POST['category'] ?? ''));
 		$coverUrl = trim((string)($_POST['cover_url'] ?? ''));
+        $availabilityCount = max(0, (int)($_POST['availability'] ?? 1));
 		if ($title === '' || $author === '' || $category === '') {
 			flash('error', 'All fields are required.');
 			redirect('manage_books.php');
 		}
-		$stmt = $pdo->prepare('INSERT INTO books (title, author, category, cover_url, availability) VALUES (?, ?, ?, ?, 1)');
-		$stmt->execute([$title, $author, $category, $coverUrl !== '' ? $coverUrl : null]);
+        $stmt = $pdo->prepare('INSERT INTO books (title, author, category, cover_url, availability) VALUES (?, ?, ?, ?, ?)');
+        $stmt->execute([$title, $author, $category, $coverUrl !== '' ? $coverUrl : null, $availabilityCount]);
 		flash('success', 'Book added.');
 		redirect('manage_books.php');
 	}
 
-	if ($action === 'edit') {
+    if ($action === 'edit') {
 		$bookId = (int)($_POST['book_id'] ?? 0);
 		$title = trim((string)($_POST['title'] ?? ''));
 		$author = trim((string)($_POST['author'] ?? ''));
 		$category = trim((string)($_POST['category'] ?? ''));
 		$coverUrl = trim((string)($_POST['cover_url'] ?? ''));
-		$availability = isset($_POST['availability']) ? (int)$_POST['availability'] : 1;
+        $availability = isset($_POST['availability']) ? max(0, (int)$_POST['availability']) : 1;
 		if ($bookId <= 0 || $title === '' || $author === '' || $category === '') {
 			flash('error', 'Invalid input.');
 			redirect('manage_books.php');
@@ -73,16 +74,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			flash('error', 'Invalid book.');
 			redirect('manage_books.php');
 		}
-		// prevent delete if currently borrowed
-		$stmt = $pdo->prepare('SELECT availability FROM books WHERE book_id = ?');
+		// Check if book has any active borrows before deletion
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM borrow_records WHERE book_id = ? AND status = "borrowed"');
 		$stmt->execute([$bookId]);
-		$book = $stmt->fetch();
-		if (!$book) {
-			flash('error', 'Book not found.');
-			redirect('manage_books.php');
-		}
-		if ((int)$book['availability'] === 0) {
-			flash('error', 'Cannot delete a borrowed book.');
+		$activeBorrows = (int)$stmt->fetchColumn();
+		
+		if ($activeBorrows > 0) {
+			flash('error', 'Cannot delete a book that is currently borrowed.');
 			redirect('manage_books.php');
 		}
 		$stmt = $pdo->prepare('DELETE FROM books WHERE book_id = ?');
@@ -137,6 +135,10 @@ include __DIR__ . '/../includes/header.php';
 						<label><?php echo h('Cover URL'); ?></label>
 						<input type="text" name="cover_url" placeholder="Optional cover image URL">
 					</div>
+                    <div>
+                        <label><?php echo h('Availability (copies)'); ?></label>
+                        <input type="number" name="availability" value="1" min="0" step="1" required>
+                    </div>
 				</div>
 				<div class="form-actions">
 					<button class="btn btn-edit add-book-btn" type="submit">
@@ -194,7 +196,14 @@ include __DIR__ . '/../includes/header.php';
 								<span class="category"><?php echo h($b['category']); ?></span>
 							</td>
 							<td>
-								<?php echo (int)$b['availability'] === 1 ? '<span class="badge success">'.h('Available').'</span>' : '<span class="badge warn">'.h('Borrowed').'</span>'; ?>
+								<?php 
+								$avail = (int)$b['availability'];
+								if ($avail > 0) {
+									echo '<span class="badge success">'.h($avail . ' Available').'</span>';
+								} else {
+									echo '<span class="badge warn">'.h('All Borrowed').'</span>';
+								}
+								?>
 							</td>
 							<td>
 								<div class="action-buttons">
@@ -205,11 +214,11 @@ include __DIR__ . '/../includes/header.php';
 										</svg>
 												Edit
 									</button>
-									<form method="post" style="display: inline;" onsubmit="return confirm('Delete this book?');">
+								<form method="post" action="manage_books.php" style="display: inline;" onsubmit="return confirm('Delete this book?');">
 										<?php echo csrf_field(); ?>
 										<input type="hidden" name="action" value="delete">
 										<input type="hidden" name="book_id" value="<?php echo h((string)$b['book_id']); ?>">
-										<button class="btn btn-danger" type="submit" <?php echo (int)$b['availability']===0?'disabled':''; ?>>
+										<button class="btn btn-danger" type="submit">
 											<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 												<polyline points="3,6 5,6 21,6"></polyline>
 												<path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
@@ -264,7 +273,7 @@ include __DIR__ . '/../includes/header.php';
 				</div>
 			</div>
 			<div style="margin-top: 20px; display: flex; gap: 12px; justify-content: flex-end;">
-				<button type="button" class="btn btn-muted" onclick="closeEditModal()">Cancel</button>
+				<button type="button" style="" class="btn btn-muted" onclick="closeEditModal()">Cancel</button>
 				<button type="submit" class="btn btn-accent">Save Changes</button>
 			</div>
 		</form>

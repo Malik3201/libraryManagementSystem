@@ -37,7 +37,8 @@ $offset = ($page - 1) * $perPage;
 $where = [];
 $params = [];
 if ($q !== '') {
-	$where[] = '(title LIKE ? ESCAPE "\\" OR author LIKE ? ESCAPE "\\" OR category LIKE ? ESCAPE "\\")';
+    // Simple LIKE matching across title, author, and category
+    $where[] = '(title LIKE ? OR author LIKE ? OR category LIKE ?)';
 	$like = escape_like($q);
 	$params[] = $like; $params[] = $like; $params[] = $like;
 }
@@ -83,8 +84,14 @@ $baseQuery = http_build_query($qs);
 include __DIR__ . '/includes/header.php';
 ?>
 
+<?php if ($user): ?>
+<div class="dashboard-layout">
+    <?php include __DIR__ . '/includes/sidebar.php'; ?>
+    <main class="dashboard-main section">
+<?php else: ?>
 <main class="section">
-	<div class="container">
+<?php endif; ?>
+    <div class="container">
 		<div class="catalog-header">
 			<div>
 				<h1 class="catalog-title"><?php echo h('Book Catalog'); ?></h1>
@@ -156,17 +163,23 @@ include __DIR__ . '/includes/header.php';
 							<h3><?php echo h($b['title']); ?></h3>
 							<p class="author"><?php echo h($b['author']); ?></p>
 							<span class="category"><?php echo h($b['category']); ?></span>
-							<div class="availability">
-								<?php if ((int)$b['availability'] === 1): ?>
-									<span class="badge success"><?php echo h('Available'); ?></span>
-								<?php else: ?>
-									<span class="badge warn"><?php echo h('Borrowed'); ?></span>
-								<?php endif; ?>
-							</div>
-                            <?php if ((int)$b['availability'] === 1): ?>
+                            <div class="availability">
+                                <?php if ((int)$b['availability'] > 0): ?>
+                                    <span class="badge success"><?php echo h('Available'); ?></span>
+                                <?php else: ?>
+                                    <span class="badge warn"><?php echo h('Borrowed'); ?></span>
+                                <?php endif; ?>
+                            </div>
+                            <?php if ((int)$b['availability'] > 0): ?>
                                 <form method="post" action="<?php echo h($user ? 'borrow.php' : 'login.php'); ?>">
                                     <?php if ($user): ?><?php echo csrf_field(); ?><?php endif; ?>
                                     <input type="hidden" name="book_id" value="<?php echo h((string)$b['book_id']); ?>">
+                                    <?php if ($user): ?>
+                                    <div style="margin: 8px 0 12px 0;">
+                                        <label style="display:block; font-size:.9rem; margin-bottom:6px; color:var(--color-text);">Return Date</label>
+                                        <input type="date" name="due_date" required style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" min="<?php echo h(date('Y-m-d')); ?>">
+                                    </div>
+                                    <?php endif; ?>
                                     <button class="btn btn-accent" type="submit">
 										<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 											<path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"></path>
@@ -215,9 +228,13 @@ include __DIR__ . '/includes/header.php';
 				<?php endif; ?>
 			</div>
 		<?php endif; ?>
-	</div>
+    </div>
+<?php if ($user): ?>
+    </main>
+</div>
+<?php else: ?>
 </main>
-
 <?php include __DIR__ . '/includes/footer.php'; ?>
+<?php endif; ?>
 
 
