@@ -50,10 +50,11 @@ if ($msg = get_flash('error')) {
     <header class="site-header">
         <div class="container nav">
             <!-- Brand/Logo -->
-            <div class="brand">
-                <span class="brand-badge">LS</span>
-                <span>Library System</span>
-            </div>
+		<div class="brand">
+			<a href="<?php echo h((strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false) ? '../index.php' : 'index.php'); ?>" aria-label="<?php echo h('Home'); ?>">
+				<img class="brand-logo" src="<?php echo h((strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false) ? '../assets/Canberra LBBS.png' : 'assets/Canberra LBBS.png'); ?>" alt="<?php echo h('Library System'); ?>">
+			</a>
+		</div>
             
             <!-- Navigation -->
             <nav>

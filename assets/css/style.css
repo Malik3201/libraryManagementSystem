@@ -64,6 +64,7 @@ a:hover { text-decoration: underline; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.125rem; color: #ffffff; }
 .brand-badge { background: var(--color-accent); color: #111827; padding: 6px 10px; border-radius: 8px; box-shadow: var(--shadow-sm); }
 .nav-links { display: flex; align-items: center; gap: 18px; }
+.brand-logo { height: 60px; width: auto; display: block; border-radius: 8px; }
 .nav-links a { 
 	color: #e5e7eb; 
 	padding: 8px 10px; 
@@ -1413,6 +1414,8 @@ body.page-register .auth-card.animate-left {
 
 /* Footer */
 .site-footer { background: #000000; border-top: 1px solid rgba(255,255,255,0.08); padding: 48px 0; color: #9ca3af; }
+.footer-brand { margin-bottom: 14px; }
+.footer-logo { height: 60px; width: auto; display: inline-block; border-radius: 8px; }
 .footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
 .footer-links a { color: #ffffff; }
 .footer-links a:hover { color: var(--color-accent); }
