@@ -138,8 +138,8 @@ include __DIR__ . '/../includes/header.php';
 						<input type="text" name="cover_url" placeholder="Optional cover image URL">
 					</div>
 				</div>
-				<div>
-					<button class="btn btn-accent" type="submit">
+				<div class="form-actions">
+					<button class="btn btn-edit add-book-btn" type="submit">
 						<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<line x1="12" y1="5" x2="12" y2="19"></line>
 							<line x1="5" y1="12" x2="19" y2="12"></line>
@@ -164,6 +164,7 @@ include __DIR__ . '/../includes/header.php';
 					<p><?php echo h('Start by adding your first book to the collection.'); ?></p>
 				</div>
 			<?php else: ?>
+				<div class="table-responsive">
 				<table class="admin-table striped hover">
 					<thead>
 						<tr>
@@ -197,12 +198,12 @@ include __DIR__ . '/../includes/header.php';
 							</td>
 							<td>
 								<div class="action-buttons">
-									<button class="btn btn-accent" onclick="editBook(<?php echo h((string)$b['book_id']); ?>, '<?php echo h($b['title']); ?>', '<?php echo h($b['author']); ?>', '<?php echo h($b['category']); ?>', '<?php echo h((string)$b['cover_url']); ?>', <?php echo (int)$b['availability']; ?>)">
+							<button class="btn btn-edit-table" onclick="editBook(<?php echo h((string)$b['book_id']); ?>, '<?php echo h($b['title']); ?>', '<?php echo h($b['author']); ?>', '<?php echo h($b['category']); ?>', '<?php echo h((string)$b['cover_url']); ?>', <?php echo (int)$b['availability']; ?>)">
 										<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 											<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
 											<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
 										</svg>
-										Edit
+												Edit
 									</button>
 									<form method="post" style="display: inline;" onsubmit="return confirm('Delete this book?');">
 										<?php echo csrf_field(); ?>
@@ -222,6 +223,7 @@ include __DIR__ . '/../includes/header.php';
 					<?php endforeach; ?>
 					</tbody>
 				</table>
+				</div>
 			<?php endif; ?>
 		</div>
 	</div>

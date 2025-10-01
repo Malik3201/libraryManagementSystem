@@ -83,12 +83,12 @@ include __DIR__ . '/includes/header.php';
 					<a href="catalog.php" class="quick-action-card">
 						<div class="quick-action-icon">
 							<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-								<circle cx="11" cy="11" r="8"></circle>
-								<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-							</svg>
-						</div>
-						<h3><?php echo h('Browse Catalog'); ?></h3>
-						<p><?php echo h('Search through our extensive collection of books and discover your next favorite read.'); ?></p>
+						<circle cx="11" cy="11" r="8"></circle>
+						<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+					</svg>
+				</div>
+				<h3><?php echo h('Browse Catalog'); ?></h3>
+				<p><?php echo h('Search through our extensive collection of books and discover your next favorite read.'); ?></p>
 					</a>
 					<a href="borrow.php" class="quick-action-card">
 						<div class="quick-action-icon">
@@ -105,7 +105,7 @@ include __DIR__ . '/includes/header.php';
 							<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
 								<path d="M3 3v18h18"></path>
 								<path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path>
-							</svg>
+					</svg>
 						</div>
 						<h3><?php echo h('Borrow History'); ?></h3>
 						<p><?php echo h('View all your past and current book borrowings and manage your loans.'); ?></p>
@@ -158,7 +158,7 @@ include __DIR__ . '/includes/header.php';
 					</div>
 				</div>
 			</div>
-
+			
 			<!-- Study Tips -->
 			<div class="dashboard-section">
 				<h2 class="section-title"><?php echo h('Study Tips'); ?></h2>
@@ -181,8 +181,8 @@ include __DIR__ . '/includes/header.php';
 				</div>
 			</div>
 		</div>
-		</div>
-	</main>
+	</div>
+</main>
 </div>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

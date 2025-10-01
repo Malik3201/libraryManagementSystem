@@ -37,6 +37,9 @@ $page_class = 'page-' . $current_page;
 			<div class="nav-links" data-nav-links>
 				<!-- Public navigation - always visible -->
 				<a class="<?php echo strpos($_SERVER['SCRIPT_NAME'], 'index.php')!==false?'active':''; ?>" href="<?php echo h((strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false) ? '../index.php' : 'index.php'); ?>"><?php echo h('Home'); ?></a>
+				<?php if (!$u): ?>
+				<a class="<?php echo strpos($_SERVER['SCRIPT_NAME'], 'catalog.php')!==false?'active':''; ?>" href="<?php echo h((strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false) ? '../catalog.php' : 'catalog.php'); ?>"><?php echo h('Catalog'); ?></a>
+				<?php endif; ?>
 				<a class="<?php echo (isset($_GET['section']) && $_GET['section']==='faqs')?'active':''; ?>" href="<?php echo h((strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false) ? '../index.php?section=faqs' : 'index.php?section=faqs'); ?>"><?php echo h('FAQs'); ?></a>
 				<a class="<?php echo (isset($_GET['section']) && $_GET['section']==='about')?'active':''; ?>" href="<?php echo h((strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false) ? '../index.php?section=about' : 'index.php?section=about'); ?>"><?php echo h('About'); ?></a>
 				
