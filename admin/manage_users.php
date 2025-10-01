@@ -54,66 +54,88 @@ $users = $pdo->query('SELECT user_id, name, email, role, created_at FROM users O
 
 $error = get_flash('error');
 $success = get_flash('success');
+include __DIR__ . '/../includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?php echo h('Manage Users'); ?></title>
-<style>
-body { font-family: Arial, sans-serif; margin: 2rem; }
-.container { max-width: 1100px; margin: 0 auto; }
-.flash { padding: .75rem; margin-bottom: 1rem; border-radius: 4px; }
-.flash.error { background: #ffe5e5; color: #8a1f1f; }
-.flash.success { background: #e6ffed; color: #0f6b2b; }
-table { border-collapse: collapse; width: 100%; }
-th, td { border: 1px solid #ddd; padding: .5rem; text-align: left; }
-form.inline { display: inline; }
-a { display:inline-block; margin-bottom:1rem; }
-</style>
-</head>
-<body>
-<div class="container">
-	<h1><?php echo h('Manage Users'); ?></h1>
-	<a href="dashboard.php"><?php echo h('Back to Dashboard'); ?></a>
-	<?php if ($error): ?><div class="flash error"><?php echo h($error); ?></div><?php endif; ?>
-	<?php if ($success): ?><div class="flash success"><?php echo h($success); ?></div><?php endif; ?>
 
-	<table>
-		<thead>
-			<tr>
-				<th><?php echo h('Name'); ?></th>
-				<th><?php echo h('Email'); ?></th>
-				<th><?php echo h('Role'); ?></th>
-				<th><?php echo h('Action'); ?></th>
-			</tr>
-		</thead>
-		<tbody>
-		<?php foreach ($users as $u): ?>
-			<tr>
-				<td><?php echo h($u['name']); ?></td>
-				<td><?php echo h($u['email']); ?></td>
-				<td><?php echo h($u['role']); ?></td>
-				<td>
-					<form method="post" class="inline" action="">
-						<?php echo csrf_field(); ?>
-						<input type="hidden" name="user_id" value="<?php echo h((string)$u['user_id']); ?>">
-						<select name="role">
-							<option value="student" <?php echo $u['role']==='student'?'selected':''; ?>><?php echo h('student'); ?></option>
-							<option value="faculty" <?php echo $u['role']==='faculty'?'selected':''; ?>><?php echo h('faculty'); ?></option>
-							<option value="admin" <?php echo $u['role']==='admin'?'selected':''; ?>><?php echo h('admin'); ?></option>
-						</select>
-						<button type="submit"><?php echo h('Update'); ?></button>
-					</form>
-				</td>
-			</tr>
-		<?php endforeach; ?>
-		</tbody>
-	</table>
+<div class="dashboard-layout">
+	<?php include __DIR__ . '/../includes/sidebar.php'; ?>
+	
+	<main class="dashboard-main section">
+	<div class="container">
+		<div class="admin-header">
+			<div>
+				<h1 class="admin-title"><?php echo h('Manage Users'); ?></h1>
+				<p class="admin-subtitle"><?php echo h('View and manage user roles and permissions'); ?></p>
+			</div>
+		</div>
+		
+		<?php if ($error): ?><div class="alert alert-error"><?php echo h($error); ?></div><?php endif; ?>
+		<?php if ($success): ?><div class="alert alert-success"><?php echo h($success); ?></div><?php endif; ?>
 
+		<?php if (empty($users)): ?>
+			<div class="empty-card">
+				<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px; color: var(--color-text-muted);">
+					<path d="M20 21v-2a4 4 0 0 0-3-3.87"></path>
+					<path d="M4 21v-2a4 4 0 0 1 3-3.87"></path>
+					<circle cx="12" cy="7" r="4"></circle>
+				</svg>
+				<h3><?php echo h('No users found'); ?></h3>
+				<p><?php echo h('No users have been registered yet.'); ?></p>
+			</div>
+		<?php else: ?>
+			<table class="admin-table striped hover">
+				<thead>
+					<tr>
+						<th><?php echo h('Name'); ?></th>
+						<th><?php echo h('Email'); ?></th>
+						<th><?php echo h('Role'); ?></th>
+						<th><?php echo h('Joined'); ?></th>
+						<th><?php echo h('Actions'); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+				<?php foreach ($users as $u): ?>
+					<tr>
+						<td>
+							<div style="font-weight: 600;"><?php echo h($u['name']); ?></div>
+							<?php if ((int)$u['user_id'] === (int)$me['user_id']): ?>
+								<span style="color: var(--color-accent); font-size: 0.8rem;">(You)</span>
+							<?php endif; ?>
+						</td>
+						<td><?php echo h($u['email']); ?></td>
+						<td>
+							<?php
+							$roleClass = 'accent';
+							if ($u['role'] === 'admin') $roleClass = 'warn';
+							elseif ($u['role'] === 'faculty') $roleClass = 'success';
+							?>
+							<span class="badge <?php echo $roleClass; ?>"><?php echo h(ucfirst($u['role'])); ?></span>
+						</td>
+						<td><?php echo h(date('M j, Y', strtotime($u['created_at']))); ?></td>
+						<td>
+							<form method="post" action="" style="display: inline-flex; align-items: center; gap: 8px;">
+								<?php echo csrf_field(); ?>
+								<input type="hidden" name="user_id" value="<?php echo h((string)$u['user_id']); ?>">
+								<select name="role" style="padding: 6px 8px; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 0.9rem;">
+									<option value="student" <?php echo $u['role']==='student'?'selected':''; ?>><?php echo h('Student'); ?></option>
+									<option value="faculty" <?php echo $u['role']==='faculty'?'selected':''; ?>><?php echo h('Faculty'); ?></option>
+									<option value="admin" <?php echo $u['role']==='admin'?'selected':''; ?>><?php echo h('Admin'); ?></option>
+								</select>
+								<button class="btn btn-accent" type="submit" style="padding: 6px 12px; font-size: 0.85rem;">
+									<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M20 6L9 17l-5-5"></path>
+									</svg>
+									Update
+								</button>
+							</form>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+				</tbody>
+			</table>
+		<?php endif; ?>
+		</div>
+	</main>
 </div>
-</body>
-</html>
 
 

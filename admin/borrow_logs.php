@@ -72,87 +72,127 @@ $qs = $_GET; unset($qs['page']); $baseQuery = http_build_query($qs);
 
 $error = get_flash('error');
 $success = get_flash('success');
+include __DIR__ . '/../includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?php echo h('Borrow Logs'); ?></title>
-<style>
-body { font-family: Arial, sans-serif; margin: 2rem; }
-.container { max-width: 1100px; margin: 0 auto; }
-.flash { padding: .75rem; margin-bottom: 1rem; border-radius: 4px; }
-.flash.error { background: #ffe5e5; color: #8a1f1f; }
-.flash.success { background: #e6ffed; color: #0f6b2b; }
-form.filters { margin-bottom: 1rem; }
-table { border-collapse: collapse; width: 100%; }
-th, td { border: 1px solid #ddd; padding: .5rem; text-align: left; }
-.pagination { margin-top: 1rem; }
-.pagination a, .pagination span { margin-right: .5rem; }
-a { display:inline-block; margin-bottom:1rem; }
-</style>
-</head>
-<body>
-<div class="container">
-	<h1><?php echo h('Borrow Logs'); ?></h1>
-	<a href="dashboard.php"><?php echo h('Back to Dashboard'); ?></a>
-	<?php if ($error): ?><div class="flash error"><?php echo h($error); ?></div><?php endif; ?>
-	<?php if ($success): ?><div class="flash success"><?php echo h($success); ?></div><?php endif; ?>
 
-	<form method="get" class="filters">
-		<label><?php echo h('Status'); ?>
-			<select name="status">
-				<option value="all" <?php echo $status==='all'?'selected':''; ?>><?php echo h('All'); ?></option>
-				<option value="borrowed" <?php echo $status==='borrowed'?'selected':''; ?>><?php echo h('Borrowed'); ?></option>
-				<option value="returned" <?php echo $status==='returned'?'selected':''; ?>><?php echo h('Returned'); ?></option>
-				<option value="overdue" <?php echo $status==='overdue'?'selected':''; ?>><?php echo h('Overdue'); ?></option>
-			</select>
-		</label>
-		<button type="submit"><?php echo h('Filter'); ?></button>
-	</form>
+<div class="dashboard-layout">
+	<?php include __DIR__ . '/../includes/sidebar.php'; ?>
+	
+	<main class="dashboard-main section">
+	<div class="container">
+		<div class="admin-header">
+			<div>
+				<h1 class="admin-title"><?php echo h('Borrow Logs'); ?></h1>
+				<p class="admin-subtitle"><?php echo h('Track all borrowing activity and manage returns'); ?></p>
+			</div>
+		</div>
+		
+		<?php if ($error): ?><div class="alert alert-error"><?php echo h($error); ?></div><?php endif; ?>
+		<?php if ($success): ?><div class="alert alert-success"><?php echo h($success); ?></div><?php endif; ?>
 
-	<table>
-		<thead>
-			<tr>
-				<th><?php echo h('User'); ?></th>
-				<th><?php echo h('Email'); ?></th>
-				<th><?php echo h('Book'); ?></th>
-				<th><?php echo h('Borrow date'); ?></th>
-				<th><?php echo h('Return date'); ?></th>
-				<th><?php echo h('Status'); ?></th>
-			</tr>
-		</thead>
-		<tbody>
-		<?php if (empty($rows)): ?>
-			<tr><td colspan="6"><?php echo h('No records found'); ?></td></tr>
-		<?php else: ?>
-			<?php foreach ($rows as $r): ?>
-			<tr>
-				<td><?php echo h($r['user_name']); ?></td>
-				<td><?php echo h($r['email']); ?></td>
-				<td><?php echo h($r['book_title']); ?></td>
-				<td><?php echo h($r['borrow_date']); ?></td>
-				<td><?php echo h($r['return_date'] ?? ''); ?></td>
-				<td><?php echo h($r['status']); ?></td>
-			</tr>
-			<?php endforeach; ?>
+		<div class="admin-form-section">
+			<h2><?php echo h('Filter Logs'); ?></h2>
+			<form method="get" class="admin-form">
+				<div class="form-row">
+					<div>
+						<label><?php echo h('Status Filter'); ?></label>
+						<select name="status">
+							<option value="all" <?php echo $status==='all'?'selected':''; ?>><?php echo h('All Records'); ?></option>
+							<option value="borrowed" <?php echo $status==='borrowed'?'selected':''; ?>><?php echo h('Currently Borrowed'); ?></option>
+							<option value="returned" <?php echo $status==='returned'?'selected':''; ?>><?php echo h('Returned'); ?></option>
+							<option value="overdue" <?php echo $status==='overdue'?'selected':''; ?>><?php echo h('Overdue'); ?></option>
+						</select>
+					</div>
+				</div>
+				<div>
+					<button class="btn btn-accent" type="submit">
+						<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="11" cy="11" r="8"></circle>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+						</svg>
+						<?php echo h('Apply Filter'); ?>
+					</button>
+				</div>
+			</form>
+		</div>
+
+		<div class="admin-form-section">
+			<h2><?php echo h('Borrowing Records'); ?></h2>
+			<?php if (empty($rows)): ?>
+				<div class="empty-card">
+					<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px; color: var(--color-text-muted);">
+						<path d="M3 3h18v4H3z"></path>
+						<path d="M8 7v14"></path>
+						<path d="M16 7v14"></path>
+					</svg>
+					<h3><?php echo h('No borrowing records'); ?></h3>
+					<p><?php echo h('No books have been borrowed yet, or no records match your filter.'); ?></p>
+				</div>
+			<?php else: ?>
+				<table class="admin-table striped hover">
+					<thead>
+						<tr>
+							<th><?php echo h('User'); ?></th>
+							<th><?php echo h('Email'); ?></th>
+							<th><?php echo h('Book Title'); ?></th>
+							<th><?php echo h('Borrow Date'); ?></th>
+							<th><?php echo h('Return Date'); ?></th>
+							<th><?php echo h('Status'); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+					<?php foreach ($rows as $r): ?>
+						<tr>
+							<td>
+								<div style="font-weight: 600;"><?php echo h($r['user_name']); ?></div>
+							</td>
+							<td><?php echo h($r['email']); ?></td>
+							<td>
+								<div style="font-weight: 500;"><?php echo h($r['book_title']); ?></div>
+							</td>
+							<td><?php echo h(date('M j, Y', strtotime($r['borrow_date']))); ?></td>
+							<td><?php echo h($r['return_date'] ? date('M j, Y', strtotime($r['return_date'])) : '—'); ?></td>
+							<td>
+								<?php if ($r['status'] === 'borrowed'): ?>
+									<span class="badge accent"><?php echo h('Currently Borrowed'); ?></span>
+								<?php elseif ($r['status'] === 'returned'): ?>
+									<span class="badge success"><?php echo h('Returned'); ?></span>
+								<?php else: ?>
+									<span class="badge warn"><?php echo h('Overdue'); ?></span>
+								<?php endif; ?>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php endif; ?>
+		</div>
+
+		<?php if ($totalPages > 1): ?>
+			<div class="pagination">
+				<?php if ($page > 1): ?>
+					<a href="?<?php echo h($baseQuery . ($baseQuery? '&':'') . 'page=' . ($page-1)); ?>" class="btn btn-outline">
+						<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="15,18 9,12 15,6"></polyline>
+						</svg>
+						<?php echo h('Previous'); ?>
+					</a>
+				<?php endif; ?>
+				
+				<span class="pagination-info"><?php echo h("Page {$page} of {$totalPages}"); ?></span>
+				
+				<?php if ($page < $totalPages): ?>
+					<a href="?<?php echo h($baseQuery . ($baseQuery? '&':'') . 'page=' . ($page+1)); ?>" class="btn btn-outline">
+						<?php echo h('Next'); ?>
+						<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="9,18 15,12 9,6"></polyline>
+						</svg>
+					</a>
+				<?php endif; ?>
+			</div>
 		<?php endif; ?>
-		</tbody>
-	</table>
-
-	<div class="pagination">
-		<?php if ($page > 1): ?>
-			<a href="?<?php echo h($baseQuery . ($baseQuery? '&':'') . 'page=' . ($page-1)); ?>"><?php echo h('Prev'); ?></a>
-		<?php else: ?><span><?php echo h('Prev'); ?></span><?php endif; ?>
-		<span><?php echo h("Page {$page} of {$totalPages}"); ?></span>
-		<?php if ($page < $totalPages): ?>
-			<a href="?<?php echo h($baseQuery . ($baseQuery? '&':'') . 'page=' . ($page+1)); ?>"><?php echo h('Next'); ?></a>
-		<?php else: ?><span><?php echo h('Next'); ?></span><?php endif; ?>
-	</div>
-
+		</div>
+	</main>
 </div>
-</body>
-</html>
 
 
