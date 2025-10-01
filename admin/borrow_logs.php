@@ -53,7 +53,7 @@ $totalPages = max(1, (int)ceil($total / $perPage));
 if ($page > $totalPages) { $page = $totalPages; $offset = ($page - 1) * $perPage; }
 
 // Fetch
-$sql = 'SELECT br.record_id, u.name AS user_name, u.email, b.title AS book_title, br.borrow_date, br.return_date, br.status
+$sql = 'SELECT br.record_id, u.name AS user_name, u.email, b.title AS book_title, br.borrow_date, br.due_date, br.return_date, br.status
 	FROM borrow_records br
 	JOIN users u ON u.user_id = br.user_id
 	JOIN books b ON b.book_id = br.book_id
@@ -131,11 +131,12 @@ include __DIR__ . '/../includes/header.php';
 				<div class="table-responsive">
 				<table class="admin-table striped hover">
 					<thead>
-						<tr>
+                        <tr>
 							<th><?php echo h('User'); ?></th>
 							<th><?php echo h('Email'); ?></th>
 							<th><?php echo h('Book Title'); ?></th>
 							<th><?php echo h('Borrow Date'); ?></th>
+                            <th><?php echo h('Due Date'); ?></th>
 							<th><?php echo h('Return Date'); ?></th>
 							<th><?php echo h('Status'); ?></th>
 						</tr>
@@ -150,7 +151,8 @@ include __DIR__ . '/../includes/header.php';
 							<td>
 								<div style="font-weight: 500;"><?php echo h($r['book_title']); ?></div>
 							</td>
-							<td><?php echo h(date('M j, Y', strtotime($r['borrow_date']))); ?></td>
+                        <td><?php echo h(date('M j, Y', strtotime($r['borrow_date']))); ?></td>
+                        <td><?php echo h($r['due_date'] ? date('M j, Y', strtotime($r['due_date'])) : '—'); ?></td>
 							<td><?php echo h($r['return_date'] ? date('M j, Y', strtotime($r['return_date'])) : '—'); ?></td>
 							<td>
 								<?php if ($r['status'] === 'borrowed'): ?>

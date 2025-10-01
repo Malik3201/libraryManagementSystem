@@ -16,6 +16,33 @@ if (!$user) { redirect('login.php'); }
 
 $success = get_flash('success');
 $error = get_flash('error');
+// Dynamic data (same as student dashboard)
+$pdo = db();
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM borrow_records WHERE user_id = ? AND status = "borrowed"');
+$stmt->execute([(int)$user['user_id']]);
+$borrowedCount = (int)$stmt->fetchColumn();
+
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM borrow_records WHERE user_id = ? AND status = "returned"');
+$stmt->execute([(int)$user['user_id']]);
+$returnedCount = (int)$stmt->fetchColumn();
+
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM borrow_records WHERE user_id = ?');
+$stmt->execute([(int)$user['user_id']]);
+$totalHistoryCount = (int)$stmt->fetchColumn();
+
+$stmt = $pdo->prepare('SELECT br.record_id, br.borrow_date, br.due_date, b.title, b.author, b.cover_url
+    FROM borrow_records br JOIN books b ON b.book_id = br.book_id
+    WHERE br.user_id = ? AND br.status = "borrowed"
+    ORDER BY br.borrow_date DESC, br.record_id DESC LIMIT 1');
+$stmt->execute([(int)$user['user_id']]);
+$currentReading = $stmt->fetch();
+
+$stmt = $pdo->prepare('SELECT br.record_id, br.borrow_date, br.due_date, b.title, b.cover_url
+    FROM borrow_records br JOIN books b ON b.book_id = br.book_id
+    WHERE br.user_id = ? AND br.status = "borrowed"
+    ORDER BY br.borrow_date DESC, br.record_id DESC LIMIT 3');
+$stmt->execute([(int)$user['user_id']]);
+$recentBorrowed = $stmt->fetchAll();
 include __DIR__ . '/includes/header.php';
 ?>
 
@@ -34,51 +61,76 @@ include __DIR__ . '/includes/header.php';
 		<?php if ($error): ?><div class="alert alert-error"><?php echo h($error); ?></div><?php endif; ?>
 		<?php if ($success): ?><div class="alert alert-success"><?php echo h($success); ?></div><?php endif; ?>
 
-		<div class="dashboard-actions">
-			<div class="dashboard-card">
-				<div class="dashboard-card-icon">
-					<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<circle cx="11" cy="11" r="8"></circle>
-						<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-					</svg>
+        <!-- Stats -->
+        <div class="dashboard-stats">
+            <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div><div class="stat-content"><div class="stat-number"><?php echo h((string)$borrowedCount); ?></div><div class="stat-label"><?php echo h('Books Borrowed'); ?></div></div></div>
+            <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle></svg></div><div class="stat-content"><div class="stat-number"><?php echo h((string)$returnedCount); ?></div><div class="stat-label"><?php echo h('Books Returned'); ?></div></div></div>
+            <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"></path><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path></svg></div><div class="stat-content"><div class="stat-number"><?php echo h((string)$totalHistoryCount); ?></div><div class="stat-label"><?php echo h('Total History'); ?></div></div></div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="dashboard-content">
+            <div class="dashboard-section">
+                <h2 class="section-title"><?php echo h('Quick Actions'); ?></h2>
+                <div class="quick-actions">
+                    <a href="catalog.php" class="quick-action-card"><div class="quick-action-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div><h3><?php echo h('Browse Catalog'); ?></h3><p><?php echo h('Explore our academic collection to find materials for your courses and research.'); ?></p></a>
+                    <a href="return.php" class="quick-action-card"><div class="quick-action-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"></path><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path></svg></div><h3><?php echo h('Return Book'); ?></h3><p><?php echo h('Return a borrowed book.'); ?></p></a>
+                    <a href="history.php" class="quick-action-card"><div class="quick-action-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"></path><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path></svg></div><h3><?php echo h('Borrow History'); ?></h3><p><?php echo h('See your returned books.'); ?></p></a>
 				</div>
-				<h3><?php echo h('Browse Catalog'); ?></h3>
-				<p><?php echo h('Explore our academic collection to find materials for your courses and research.'); ?></p>
-				<a class="btn btn-accent" href="catalog.php">
-					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"></path>
-						<path d="M4 4v15"></path>
-						<path d="M8 4v15"></path>
-						<path d="M12 4v15"></path>
-					</svg>
-					<?php echo h('Explore Books'); ?>
-				</a>
 			</div>
 			
-			<div class="dashboard-card">
-				<div class="dashboard-card-icon">
-					<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<path d="M3 3h18v4H3z"></path>
-						<path d="M8 7v14"></path>
-						<path d="M16 7v14"></path>
-					</svg>
+            <!-- Reading Progress -->
+            <div class="dashboard-section">
+                <h2 class="section-title"><?php echo h('Reading Progress'); ?></h2>
+                <div class="progress-grid">
+                    <div class="progress-card">
+                        <h3><?php echo h('Currently Reading'); ?></h3>
+                        <?php if ($currentReading): ?>
+                        <div class="book-item">
+                            <div class="book-cover">
+                                <?php if (!empty($currentReading['cover_url'])): ?>
+                                    <img src="<?php echo h($currentReading['cover_url']); ?>" alt="<?php echo h($currentReading['title']); ?>" style="width:60px;height:80px;object-fit:cover;border-radius:8px;">
+                                <?php else: ?>
+                                    <div class="book-placeholder">📚</div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="book-info">
+                                <h4><?php echo h($currentReading['title']); ?></h4>
+                                <?php if (!empty($currentReading['author'])): ?><p><?php echo h('by ' . $currentReading['author']); ?></p><?php endif; ?>
+                                <span class="progress-text"><?php echo h('Borrowed: ' . date('M j, Y', strtotime($currentReading['borrow_date'])) . ($currentReading['due_date'] ? ' • Due: ' . date('M j, Y', strtotime($currentReading['due_date'])) : '')); ?></span>
+                            </div>
+                        </div>
+                        <?php else: ?>
+                            <p class="muted"><?php echo h('No active reading right now.'); ?></p>
+                        <?php endif; ?>
+                    </div>
+                    <div class="progress-card">
+                        <h3><?php echo h('Recently Borrowed'); ?></h3>
+                        <div class="recent-books">
+                            <?php if (empty($recentBorrowed)): ?>
+                                <p class="muted"><?php echo h('No recent borrowings.'); ?></p>
+                            <?php else: foreach ($recentBorrowed as $rb): ?>
+                            <div class="recent-book">
+                                <div class="book-cover small">
+                                    <?php if (!empty($rb['cover_url'])): ?>
+                                        <img src="<?php echo h($rb['cover_url']); ?>" alt="<?php echo h($rb['title']); ?>" style="width:40px;height:50px;object-fit:cover;border-radius:6px;">
+                                    <?php else: ?>
+                                        <div class="book-placeholder">📖</div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="book-details">
+                                    <h5><?php echo h($rb['title']); ?></h5>
+                                    <p><?php echo h('Borrowed: ' . date('M j, Y', strtotime($rb['borrow_date'])) . ($rb['due_date'] ? ' • Due: ' . date('M j, Y', strtotime($rb['due_date'])) : '')); ?></p>
+                                </div>
+                            </div>
+                            <?php endforeach; endif; ?>
+                        </div>
+                    </div>
 				</div>
-				<h3><?php echo h('My History'); ?></h3>
-				<p><?php echo h('Manage your borrowed materials and track your research resources.'); ?></p>
-				<a class="btn btn-outline" href="history.php">
-					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<path d="M3 3h18v4H3z"></path>
-						<path d="M8 7v14"></path>
-						<path d="M16 7v14"></path>
-					</svg>
-					<?php echo h('View History'); ?>
-				</a>
 			</div>
 		</div>
-		</div>
-	</main>
+	</div>
+</main>
 </div>
-
-<?php include __DIR__ . '/includes/footer.php'; ?>
 
 

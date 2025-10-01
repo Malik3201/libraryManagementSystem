@@ -1,39 +1,86 @@
 <?php
-/*
- * Purpose: Admin dashboard showing high-level stats
+/**
+ * admin/dashboard.php
+ * Admin dashboard with system statistics, charts, and recent activity.
+ * Provides overview of users, books, borrowing activity, and system status.
  */
 
 declare(strict_types=1);
 
+// Include required dependencies
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/csrf.php';
 
+// Initialize secure session
 start_secure_session();
 
+/**
+ * Ensure only admin users can access this page
+ */
 function require_admin(): void {
-	$user = current_user();
-	if (!$user || ($user['role'] ?? '') !== 'admin') {
-		flash('error', 'Admin access required.');
-		redirect('../login.php');
-	}
+    $user = current_user();
+    if (!$user || ($user['role'] ?? '') !== 'admin') {
+        flash('error', 'Admin access required.');
+        redirect('../login.php');
+    }
 }
 
+// Check admin access
 require_admin();
 
+// Generate CSRF token for forms
 csrf_token();
 
+// Get database connection
 $pdo = db();
 
+// Fetch system statistics
 $totalUsers = (int)$pdo->query('SELECT COUNT(*) AS c FROM users')->fetch()['c'];
 $totalBooks = (int)$pdo->query('SELECT COUNT(*) AS c FROM books')->fetch()['c'];
 $activeBorrowed = (int)$pdo->query("SELECT COUNT(*) AS c FROM borrow_records WHERE status='borrowed'")->fetch()['c'];
 $returned = (int)$pdo->query("SELECT COUNT(*) AS c FROM borrow_records WHERE status='returned'")->fetch()['c'];
 
+// Get flash messages for display
 $error = get_flash('error');
 $success = get_flash('success');
+
+// Collect recent activity data for dashboard display
+$recentActivity = [];
+// Newest books
+$stmt = $pdo->query('SELECT title, created_at FROM books ORDER BY created_at DESC LIMIT 3');
+foreach ($stmt->fetchAll() as $row) {
+    $recentActivity[] = [
+        'type' => 'book_added',
+        'title' => (string)$row['title'],
+        'time' => (string)$row['created_at'],
+    ];
+}
+// Latest users
+$stmt = $pdo->query('SELECT name, role, created_at FROM users ORDER BY created_at DESC LIMIT 3');
+foreach ($stmt->fetchAll() as $row) {
+    $recentActivity[] = [
+        'type' => 'user_registered',
+        'name' => (string)$row['name'],
+        'role' => (string)$row['role'],
+        'time' => (string)$row['created_at'],
+    ];
+}
+// Latest returns
+$stmt = $pdo->query('SELECT b.title, br.return_date FROM borrow_records br JOIN books b ON b.book_id = br.book_id WHERE br.status = "returned" ORDER BY br.return_date DESC LIMIT 3');
+foreach ($stmt->fetchAll() as $row) {
+    $recentActivity[] = [
+        'type' => 'book_returned',
+        'title' => (string)$row['title'],
+        'time' => (string)$row['return_date'],
+    ];
+}
+// Sort by time desc when available
+usort($recentActivity, function($a,$b){ return strcmp($b['time'] ?? '', $a['time'] ?? ''); });
+// keep top 4
+$recentActivity = array_slice($recentActivity, 0, 4);
 include __DIR__ . '/../includes/header.php';
 ?>
 
@@ -121,49 +168,36 @@ include __DIR__ . '/../includes/header.php';
 			</div>
 
 			<!-- Recent Activity -->
-			<div class="dashboard-section">
-				<h2 class="section-title"><?php echo h('Recent Activity'); ?></h2>
-				<div class="activity-feed">
-					<div class="activity-item">
-						<div class="activity-icon">
-							<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-								<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-								<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-							</svg>
-						</div>
-						<div class="activity-content">
-							<p><strong>New book added:</strong> "Introduction to Machine Learning" by Dr. Smith</p>
-							<span class="activity-time">2 hours ago</span>
-						</div>
-					</div>
-					<div class="activity-item">
-						<div class="activity-icon">
-							<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-								<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-								<circle cx="9" cy="7" r="4"></circle>
-								<path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-								<path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-							</svg>
-						</div>
-						<div class="activity-content">
-							<p><strong>New user registered:</strong> John Doe (Student)</p>
-							<span class="activity-time">4 hours ago</span>
-						</div>
-					</div>
-					<div class="activity-item">
-						<div class="activity-icon">
-							<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-								<path d="M9 12l2 2 4-4"></path>
-								<circle cx="12" cy="12" r="10"></circle>
-							</svg>
-						</div>
-						<div class="activity-content">
-							<p><strong>Book returned:</strong> "Data Structures" by Jane Wilson</p>
-							<span class="activity-time">6 hours ago</span>
-						</div>
-					</div>
-				</div>
-			</div>
+            <div class="dashboard-section">
+                <h2 class="section-title"><?php echo h('Recent Activity'); ?></h2>
+                <div class="activity-feed">
+                <?php if (empty($recentActivity)): ?>
+                    <p class="muted" style="margin:0;">No recent activity yet.</p>
+                <?php else: foreach ($recentActivity as $evt): ?>
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <?php if ($evt['type']==='book_added'): ?>
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                            <?php elseif ($evt['type']==='user_registered'): ?>
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                            <?php else: ?>
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle></svg>
+                            <?php endif; ?>
+                        </div>
+                        <div class="activity-content">
+                            <?php if ($evt['type']==='book_added'): ?>
+                                <p><strong>New book added:</strong> <?php echo h($evt['title']); ?></p>
+                            <?php elseif ($evt['type']==='user_registered'): ?>
+                                <p><strong>New user:</strong> <?php echo h($evt['name']); ?> (<?php echo h(ucfirst($evt['role'])); ?>)</p>
+                            <?php else: ?>
+                                <p><strong>Book returned:</strong> <?php echo h($evt['title']); ?></p>
+                            <?php endif; ?>
+                            <span class="activity-time"><?php echo h(date('M j, Y', strtotime($evt['time']))); ?></span>
+                        </div>
+                    </div>
+                <?php endforeach; endif; ?>
+                </div>
+            </div>
 
 			<!-- Quick Actions -->
 			<div class="dashboard-section">
